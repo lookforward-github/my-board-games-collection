@@ -1,0 +1,938 @@
+:root {
+  --bg: #f6f4ef;
+  --surface: #fffdf8;
+  --surface-2: #efece3;
+  --border: #ddd7ca;
+  --text: #23201b;
+  --muted: #6d675c;
+  --accent: #8a4b2a;
+  --accent-soft: #f0e2d8;
+  --warn: #8a6420;
+  --warn-soft: #f6ecd8;
+  --w-easy: #5c8a52;
+  --w-mid: #b08a2e;
+  --w-hard: #b5652c;
+  --w-extreme: #9c3c30;
+  --shadow: 0 1px 2px rgba(35,32,27,.06), 0 4px 14px rgba(35,32,27,.05);
+  --radius: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171614;
+    --surface: #201e1b;
+    --surface-2: #2a2724;
+    --border: #3a3631;
+    --text: #ece8e1;
+    --muted: #a09991;
+    --accent: #d99a6c;
+    --accent-soft: #3a2a20;
+    --warn: #ddb972;
+    --warn-soft: #3a3220;
+    --w-easy: #8fbf85;
+    --w-mid: #ddb972;
+    --w-hard: #e0956a;
+    --w-extreme: #d97b6e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #171614;
+  --surface: #201e1b;
+  --surface-2: #2a2724;
+  --border: #3a3631;
+  --text: #ece8e1;
+  --muted: #a09991;
+  --accent: #d99a6c;
+  --accent-soft: #3a2a20;
+  --warn: #ddb972;
+  --warn-soft: #3a3220;
+  --w-easy: #8fbf85;
+  --w-mid: #ddb972;
+  --w-hard: #e0956a;
+  --w-extreme: #d97b6e;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------- header ---------- */
+header.top {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 30;
+}
+.top-inner { display: flex; align-items: center; gap: 16px; padding: 14px 0; flex-wrap: wrap; }
+/* Название — кнопка «домой»: возвращает на вкладку игр и чистит фильтры.
+   Сбрасываем стили кнопки, чтобы выглядело как обычный заголовок. */
+.brand {
+  font-size: 19px; font-weight: 650; letter-spacing: -.01em; margin-right: auto;
+  display: flex; align-items: center; gap: 9px;
+  border: 0; background: none; padding: 0; cursor: pointer;
+  color: inherit; font-family: inherit; text-align: left;
+}
+.brand:hover { color: var(--accent); }
+.brand:hover small { color: var(--accent); opacity: .75; }
+.brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+/* ---------- d20 ---------- */
+.brand-row { display: flex; align-items: center; gap: 11px; margin-right: auto; }
+.dice-btn {
+  border: 0; background: none; padding: 0; cursor: pointer; line-height: 0;
+  border-radius: 8px;
+}
+.dice-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.d20 { position: relative; display: block; width: 34px; height: 34px; }
+.d20 svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.d20-body { fill: var(--surface-2); stroke: var(--muted); stroke-width: 3; stroke-linejoin: round; }
+.d20-face { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-linejoin: round; opacity: .55; }
+.d20-edge { stroke: var(--muted); stroke-width: 2.5; opacity: .45; }
+.d20-num {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 12.5px; font-weight: 700; color: var(--muted);
+  padding-top: 1px; pointer-events: none;
+}
+.dice-btn:hover .d20-body { stroke: var(--accent); }
+.dice-btn:hover .d20-num  { color: var(--accent); }
+
+/* Бросок: кубик прокручивается, число мельтешит (меняется из JS). */
+.d20.rolling { animation: d20spin .75s cubic-bezier(.34,.4,.2,1); }
+@keyframes d20spin {
+  0%   { transform: rotate(0) scale(1); }
+  35%  { transform: rotate(340deg) scale(1.18); }
+  70%  { transform: rotate(620deg) scale(1.06); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+
+/* Критический успех: зелёная вспышка. */
+.d20.crit .d20-body { fill: rgba(106,160,106,.22); stroke: var(--w-easy); }
+.d20.crit .d20-face, .d20.crit .d20-edge { stroke: var(--w-easy); opacity: .7; }
+.d20.crit .d20-num  { color: var(--w-easy); }
+.d20.crit { animation: d20crit .9s ease-out; }
+@keyframes d20crit {
+  0%   { transform: scale(1);   filter: drop-shadow(0 0 0 rgba(106,160,106,0)); }
+  25%  { transform: scale(1.35); filter: drop-shadow(0 0 14px rgba(106,160,106,.95)); }
+  60%  { transform: scale(1.05); filter: drop-shadow(0 0 8px rgba(106,160,106,.55)); }
+  100% { transform: scale(1);   filter: drop-shadow(0 0 0 rgba(106,160,106,0)); }
+}
+
+/* Провал: красный, кубик «спотыкается» и оседает. */
+.d20.fail .d20-body { fill: rgba(196,99,95,.2); stroke: #c4635f; }
+.d20.fail .d20-face, .d20.fail .d20-edge { stroke: #c4635f; opacity: .7; }
+.d20.fail .d20-num  { color: #c4635f; }
+.d20.fail { animation: d20fail .85s ease-out; }
+@keyframes d20fail {
+  0%   { transform: translate(0,0) rotate(0); }
+  15%  { transform: translate(-3px,0) rotate(-9deg); }
+  30%  { transform: translate(3px,1px) rotate(8deg); }
+  45%  { transform: translate(-2px,2px) rotate(-6deg); }
+  60%  { transform: translate(2px,3px) rotate(4deg); }
+  100% { transform: translate(0,3px) rotate(0); opacity: .75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .d20.rolling, .d20.crit, .d20.fail { animation: none; }
+}
+.brand small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+
+.tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 3px; border-radius: 8px; }
+.tab {
+  border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14px;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+
+.icon-btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 15px;
+  display: grid; place-items: center;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 250px 1fr; gap: 26px; padding: 22px 0 60px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Вкладки без сайдбара («Ролевые игры», «Статистика») занимают всю ширину. */
+.layout.no-filters { grid-template-columns: 1fr; }
+.layout.no-filters .filters { display: none; }
+
+/* ---------- filters ---------- */
+/* Сайдбар прилипает под шапку и скроллится сам, если фильтров больше,
+   чем высота экрана. Высоту шапки держим в переменной --header-h: она
+   зависит от ширины окна (шапка переносит строки), поэтому JS обновляет
+   её на resize. Константы здесь были бы неверны на узких экранах —
+   сайдбар «уезжал» бы при прокрутке. */
+.filters {
+  /* Отступ должен совпадать с padding-top у .layout (22px) — иначе в момент
+     прилипания сайдбар прыгает вверх на разницу этих значений. */
+  position: sticky; top: calc(var(--header-h, 70px) + 22px);
+  max-height: calc(100vh - var(--header-h, 70px) - 44px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 8px;
+  scrollbar-width: thin;
+}
+.filters::-webkit-scrollbar { width: 8px; }
+.filters::-webkit-scrollbar-thumb {
+  background: var(--border); border-radius: 4px;
+}
+.filters::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+.filters::-webkit-scrollbar-track { background: transparent; }
+
+@media (max-width: 900px) {
+  .filters { position: static; display: none; max-height: none; overflow: visible; }
+  .filters.open { display: block; }
+}
+.fgroup { border-bottom: 1px solid var(--border); padding: 14px 0; }
+.fgroup:first-child { padding-top: 0; }
+.fgroup h3 {
+  margin: 0 0 9px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 600;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Длинные списки (жанры, механики) сворачиваем до трёх строк: строка чипа
+   26px + зазор 6px, три строки = 26*3 + 6*2 = 90px. Разворот — по кнопке,
+   поэтому высота задаётся классом, а не max-height на всех подряд. */
+.chips.clamped {
+  max-height: 90px; overflow: hidden;
+  /* нижний край подтравливаем градиентом — видно, что список продолжается */
+  -webkit-mask-image: linear-gradient(to bottom, #000 62px, transparent 90px);
+  mask-image: linear-gradient(to bottom, #000 62px, transparent 90px);
+}
+.chips-more {
+  margin-top: 7px; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--accent); font-weight: 600;
+}
+.chips-more:hover { text-decoration: underline; }
+.chip {
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+}
+.chip:hover { border-color: var(--muted); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.chip .cnt { opacity: .6; font-size: 11px; margin-left: 3px; }
+
+.search {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font: inherit;
+}
+.search:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+
+.range-row { display: flex; align-items: center; gap: 9px; }
+.range-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.range-val { font-size: 12.5px; color: var(--muted); min-width: 62px; text-align: right; font-variant-numeric: tabular-nums; }
+
+label.check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); cursor: pointer; padding: 3px 0; }
+label.check input { accent-color: var(--accent); }
+label.check:hover { color: var(--text); }
+
+.reset {
+  width: 100%; margin-top: 14px; padding: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); border-radius: 8px; cursor: pointer; font: inherit; font-size: 13px;
+}
+.reset:hover { color: var(--text); border-color: var(--muted); }
+
+/* ---------- toolbar ---------- */
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.count { font-size: 13.5px; color: var(--muted); margin-right: auto; }
+.count b { color: var(--text); font-variant-numeric: tabular-nums; }
+select.sort {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  font: inherit; font-size: 13.5px; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+}
+.filters-toggle { display: none; }
+@media (max-width: 900px) { .filters-toggle { display: inline-block; } }
+
+/* ---------- cards ---------- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(258px, 1fr)); gap: 13px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; cursor: pointer; transition: border-color .12s, transform .12s;
+  display: flex; flex-direction: column; gap: 9px;
+  text-align: left; font: inherit; color: inherit; width: 100%;
+}
+
+/* обложка */
+.cover {
+  width: 100%; aspect-ratio: 4 / 3; border-radius: 7px; overflow: hidden;
+  background: var(--surface-2); display: grid; place-items: center; flex-shrink: 0;
+}
+.cover img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  background: var(--surface-2);
+}
+.cover.is-missing::after {
+  content: '🎲'; font-size: 30px; opacity: .28;
+}
+.cover img.broken { display: none; }
+.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Заголовок занимает ровно две строки, подзаголовок — одну:
+   иначе длинные названия растягивают карточку и ряд перестаёт быть ровным. */
+.card-head { display: flex; align-items: flex-start; gap: 8px; min-height: 58px; }
+.card-head > div { min-width: 0; flex: 1; }
+.card h4 {
+  margin: 0; font-size: 15px; font-weight: 620; line-height: 1.32; letter-spacing: -.005em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card .orig {
+  font-size: 12.5px; color: var(--muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.lang-flag { font-size: 14px; flex-shrink: 0; margin-left: auto; }
+
+/* Две строки метаданных: не переносятся, высота фиксирована — карточки
+   в ряду остаются выровненными независимо от набора полей. */
+.meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
+  font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums;
+  min-height: 19px; overflow: hidden;
+}
+.meta span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.meta .price { color: var(--accent); font-weight: 650; }
+.meta-2 { margin-top: -4px; }
+.meta-2 .bgg-dot { margin-left: auto; }
+
+/* Теги прижаты к низу карточки и держатся в одну строку:
+   перенос менял бы высоту карточек в ряду. */
+.tags {
+  display: flex; flex-wrap: nowrap; gap: 4px; margin-top: auto;
+  overflow: hidden; min-height: 20px; align-items: center;
+}
+.tags .tag { flex-shrink: 0; }
+.tag { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--muted); }
+
+.exp-badge {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 650;
+  color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 4px;
+  align-self: flex-start;
+}
+.exp-count { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+/* чего не хватает в записи */
+.missing {
+  font-size: 11.5px; line-height: 1.35; color: var(--warn);
+  background: var(--warn-soft); border-radius: 5px; padding: 5px 8px;
+}
+
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 6px; }
+
+/* weight bar */
+/* min-height держит строку даже когда сложность неизвестна и полосы нет */
+.wbar { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); min-height: 18px; }
+/* Оба элемента — span'ы внутри карточки, поэтому им нужен block:
+   к инлайновым width/height не применяются и полоска не рисуется. */
+.wbar-track {
+  display: block; flex: 1; min-width: 0; max-width: 90px; height: 5px;
+  background: var(--surface-2); border-radius: 3px; overflow: hidden;
+}
+.wbar-fill { display: block; height: 100%; border-radius: 3px; background: var(--w-mid); }
+/* градация по сложности: лёгкая → хардкор */
+.wbar-fill.w1 { background: var(--w-easy); }
+.wbar-fill.w2 { background: var(--w-mid); }
+.wbar-fill.w3 { background: var(--w-hard); }
+.wbar-fill.w4 { background: var(--w-extreme); }
+.wbar .wnum { font-variant-numeric: tabular-nums; min-width: 20px; }
+
+/* ---------- RPG section ---------- */
+.sys-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 12px; overflow: hidden;
+}
+.sys-head {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer;
+  user-select: none; width: 100%; border: 0; background: transparent; color: inherit;
+  font: inherit; text-align: left;
+}
+.sys-head:hover { background: var(--surface-2); }
+.sys-head h3 { margin: 0; font-size: 16px; font-weight: 640; }
+.sys-head .sub { font-size: 12.5px; color: var(--muted); }
+.sys-head .arrow { margin-left: auto; color: var(--muted); transition: transform .15s; font-size: 12px; }
+.sys-card.open .sys-head .arrow { transform: rotate(90deg); }
+.sys-body { display: none; border-top: 1px solid var(--border); padding: 6px 16px 16px; }
+.sys-card.open .sys-body { display: block; }
+
+.sup-group { margin-top: 18px; }
+.sup-group h5 {
+  margin: 0 0 9px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 600;
+}
+.sup-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 5px; }
+
+/* Карточки материалов НРИ: те же плитки, что в основном разделе,
+   но плотнее — параметров у книги правил меньше, чем у настолки. */
+.sup-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 11px; }
+.supp-card { padding: 11px; gap: 7px; }
+/* Книги — вертикальные, но не во весь рост карточки: обложка вписывается
+   целиком (contain), чтобы не срезать корешок и заголовок. */
+.supp-card .cover { aspect-ratio: 4 / 3; }
+.supp-card .cover img { object-fit: contain; }
+.supp-card .card-head { min-height: 44px; }
+.supp-card h4 { font-size: 13.5px; line-height: 1.28; }
+.supp-card .orig { font-size: 11.5px; }
+.supp-card .meta { min-height: 17px; font-size: 11.5px; }
+.supp-card .tags { min-height: 0; }
+.supp-card .supp-type { color: var(--muted); }
+.supp-card .uni-tag { color: var(--accent); background: var(--accent-soft); }
+
+/* обложка системы в шапке раскрывающейся карточки */
+.sys-cover {
+  width: 44px; height: 56px; object-fit: cover; border-radius: 5px;
+  flex-shrink: 0; background: var(--surface-2);
+}
+.sup-item {
+  display: flex; align-items: center; gap: 7px; font-size: 13.5px;
+  padding: 5px 9px; background: var(--surface-2); border-radius: 6px;
+}
+.sup-item .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sup-item .x2 { font-size: 11px; color: var(--accent); font-weight: 650; flex-shrink: 0; }
+/* ∀ — материал подходит нескольким системам */
+.sup-item .uni { font-size: 11px; color: var(--accent); flex-shrink: 0; margin-left: auto; opacity: .75; }
+
+/* блок универсальных материалов выделяем рамкой акцентного цвета */
+.sys-card.universal { border-color: var(--accent); }
+.sys-card.universal .sys-head h3 { color: var(--accent); }
+
+/* ---------- modal ---------- */
+/* Пока открыта карточка, фон не прокручивается. */
+body.modal-open { overflow: hidden; }
+
+.backdrop {
+  position: fixed; inset: 0; background: rgba(20,18,15,.55);
+  display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100;
+}
+.backdrop.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  max-width: 580px; width: 100%; max-height: 86vh; overflow-y: auto; padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.28);
+  /* Место под скроллбар держим всегда: иначе раскрытие блока внутри карточки
+     заставляет полосу появиться и всё содержимое дёргается влево. */
+  scrollbar-gutter: stable;
+}
+.modal h2 { margin: 0 0 3px; font-size: 21px; letter-spacing: -.015em; }
+.modal .m-orig { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+.m-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.m-stat { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.m-stat .lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.m-stat .val { font-size: 16px; font-weight: 620; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.m-stat .sub-val { font-size: 12px; color: var(--muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
+.m-sec { margin-bottom: 15px; }
+.m-sec h4 { margin: 0 0 7px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.m-list { margin: 0; padding-left: 18px; }
+.m-list li { margin-bottom: 3px; }
+.close-x { float: right; border: 0; background: transparent; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 0 0 0 12px; }
+.close-x:hover { color: var(--text); }
+
+/* переходы между связанными играми внутри модалки */
+.modal-back {
+  border: 0; background: transparent; color: var(--muted); font: inherit;
+  font-size: 13px; cursor: pointer; padding: 0 0 8px; display: block;
+}
+.modal-back:hover { color: var(--accent); }
+
+.rel-list { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.rel-link {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  font: inherit; font-size: 13.5px; text-align: left; cursor: pointer;
+  padding: 6px 11px; border-radius: 7px; width: 100%;
+}
+.rel-link:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* обложка и ссылка в модалке */
+.m-cover {
+  width: 100%; max-height: 260px; object-fit: contain; border-radius: 9px;
+  background: var(--surface-2); margin-bottom: 16px; display: block;
+}
+.bgg-link {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--border);
+  padding: 7px 13px; border-radius: 8px; font-weight: 600;
+}
+.bgg-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+.m-links { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* маленькая иконка ссылки на карточке */
+.card .bgg-dot {
+  font-size: 11px; color: var(--muted); text-decoration: none;
+  border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px;
+}
+.card .bgg-dot:hover { color: var(--accent); border-color: var(--accent); }
+
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty .big { font-size: 34px; margin-bottom: 10px; }
+
+/* ---------- stats page ---------- */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 26px; }
+.stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.stat-box .n { font-size: 28px; font-weight: 660; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat-box .l { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13.5px; }
+.bar-row .bl { width: 150px; flex-shrink: 0; color: var(--muted); text-align: right; }
+.bar-row .bt { flex: 1 1 auto; min-width: 0; height: 15px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.bar-row .bf { display: block; }
+.bar-row .bf { height: 100%; background: var(--accent); border-radius: 3px; }
+.bar-row .bn { width: 34px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12.5px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+.panel h3 { margin: 0 0 14px; font-size: 15px; font-weight: 640; }
+
+/* ---------- заполненность данными ---------- */
+.fill-row { display: flex; align-items: center; gap: 12px; }
+.fill-track {
+  display: block; flex: 1; min-width: 0; height: 14px;
+  background: var(--surface-2); border-radius: 7px; overflow: hidden;
+}
+.fill-bar {
+  display: block; height: 100%; border-radius: 7px;
+  background: linear-gradient(90deg, var(--w-easy), var(--accent));
+  transition: width .3s ease;
+}
+.fill-num {
+  font-size: 20px; font-weight: 660; font-variant-numeric: tabular-nums;
+  min-width: 52px; text-align: right;
+}
+.fill-sub { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.fill-sub b { color: var(--text); font-variant-numeric: tabular-nums; }
+.fill-kinds { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.bar-row .bf.gap { background: var(--warn); }
+/* в блоке заполненности значения вида «120/150» — нужна ширина побольше */
+.fill-kinds .bar-row .bn { width: 62px; white-space: nowrap; }
+
+/* ---------- значок «есть что дозаполнить» ---------- */
+/* display в классе перебивает атрибут hidden — возвращаем ему приоритет,
+   иначе пустой значок висит в шапке, когда дозаполнять нечего. */
+.gaps-btn[hidden] { display: none !important; }
+.gaps-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--warn); background: var(--warn-soft); color: var(--warn);
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+}
+.gaps-btn:hover { filter: brightness(1.12); }
+
+/* Список позиций с неполными данными: плотные строки, а не плитки —
+   это рабочий чек-лист, важна плотность, а не картинки. */
+.gap-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 9px 12px; margin-bottom: 6px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; color: inherit; font: inherit;
+}
+.gap-row:hover { border-color: var(--accent); }
+.gap-cover { flex: 0 0 38px; height: 38px; border-radius: 6px; overflow: hidden; background: var(--surface-2); }
+.gap-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gap-noimg { display: grid; place-items: center; width: 100%; height: 100%; color: var(--muted); }
+.gap-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gap-title { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gap-kind { font-size: 11.5px; color: var(--muted); }
+.gap-miss { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.gap-tag {
+  font-size: 11px; padding: 2px 7px; border-radius: 999px;
+  background: var(--warn-soft); color: var(--warn); white-space: nowrap;
+}
+
+/* ---------- круговые диаграммы ---------- */
+/* Ровно две диаграммы в ряд: при трёх колонках четвёртая оставалась сиротой,
+   а сами круги выходили мелкими. На узком экране схлопываемся в одну. */
+.pies { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+@media (max-width: 900px) { .pies { grid-template-columns: 1fr; } }
+/* Подпись под заголовком: у диаграмм разные базы, без неё числа в центре
+   выглядят противоречиво. */
+.panel-note { margin: -4px 0 12px; font-size: 12px; color: var(--muted); }
+.pie-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.pie { width: 190px; height: 190px; flex: 0 0 auto; }
+.pie-total { font-size: 20px; font-weight: 700; fill: var(--text); text-anchor: middle; }
+.pie-unit  { font-size: 9.5px; fill: var(--muted); text-anchor: middle; }
+/* Легенда не тянется на всю панель: иначе значение улетает к правому краю
+   и отрывается от своей подписи. Ширину задаёт содержимое, а между меткой
+   и числом — фиксированный отступ. */
+.pie-legend { list-style: none; margin: 0; padding: 0; flex: 0 1 auto; }
+.pie-legend li { display: flex; align-items: baseline; gap: 9px; padding: 5px 0; font-size: 13.5px; }
+.pie-legend .dot {
+  width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto;
+  position: relative; top: 1px;
+}
+.pie-legend .pl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pie-legend .pv {
+  margin-left: auto; padding-left: 18px;
+  color: var(--muted); font-size: 12.5px; white-space: nowrap;
+}
+
+/* «Мне повезёт» — заметнее обычного чипа, но не кричит. */
+.chip.lucky { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.chip.lucky:hover { background: var(--accent-soft); }
+
+
+/* ============ Мобильная вёрстка (телефоны) ============
+   Главная задача — вернуть экран контенту: на 375px прежняя шапка занимала
+   175px, четверть высоты. Вкладки переезжают в скроллящуюся ленту, кубик
+   и тема ужимаются, тулбар складывается в одну строку. */
+@media (max-width: 620px) {
+  .wrap { padding: 0 12px; }
+
+  /* Шапка: название и кнопки в первой строке, вкладки во второй. */
+  .top-inner { gap: 10px; padding: 10px 0; }
+  .brand-row { gap: 9px; }
+  .brand { font-size: 16.5px; }
+  .brand small { font-size: 11.5px; }
+  .d20 { width: 28px; height: 28px; }
+  .d20-num { font-size: 10.5px; }
+  .icon-btn { width: 32px; height: 32px; flex: 0 0 auto; }
+  .gaps-btn { padding: 4px 9px; font-size: 12px; }
+
+  /* Вкладки не влезают в 375px — даём им горизонтальную прокрутку,
+     чтобы «Статистика» не уезжала за край без возможности до неё добраться. */
+  .tabs {
+    order: 3; width: 100%;
+    overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; flex: 0 0 auto; padding: 7px 12px; font-size: 13px; }
+
+  /* Тулбар в одну строку: счётчик, «Фильтры», «Мне повезёт», сортировка. */
+  .toolbar { gap: 8px; margin-bottom: 12px; }
+  .count { font-size: 12.5px; width: 100%; margin-bottom: -2px; }
+  .toolbar .chip { padding: 6px 11px; }
+  .sort { flex: 1 1 auto; min-width: 0; font-size: 13px; padding: 7px 9px; }
+
+  /* Карточки — одна колонка во всю ширину. minmax(0,1fr), а не 1fr:
+     у грид-элементов min-width по умолчанию auto, поэтому длинные названия
+     и ряды тегов раздували колонку шире экрана. */
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .card { padding: 12px; min-width: 0; }
+  .card * { min-width: 0; }
+
+  /* Фильтры разворачиваются поверх списка, а не сжимают его. */
+  .filters { padding-right: 0; }
+  .fgroup { padding: 12px 0; }
+
+  /* Модалка почти на весь экран: на телефоне важнее площадь, чем поля. */
+  .backdrop { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100%; width: 100%; max-height: 92vh;
+    border-radius: 16px 16px 0 0; padding: 18px 16px 22px;
+  }
+  .m-cover { max-height: 210px; }
+
+  /* Статистика: плашки по две в ряд, диаграммы в одну колонку. */
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stat-box .n { font-size: 22px; }
+  .stat-box .l { font-size: 11px; }
+  .pie-wrap { gap: 14px; }
+  .pie { width: 150px; height: 150px; }
+
+  /* Раздел НРИ и миниатюр: карточки материалов в одну колонку. */
+  .sup-grid { grid-template-columns: minmax(0, 1fr); }
+  .sup-list { grid-template-columns: minmax(0, 1fr); }
+  .supp-card { min-width: 0; }
+
+  /* Список «что дозаполнить»: метки под названием, а не встык справа. */
+  .gap-row { flex-wrap: wrap; }
+  .gap-miss { width: 100%; justify-content: flex-start; padding-left: 50px; }
+
+  /* На телефоне карточки идут в одну колонку, и разнобой высот уже не мешает —
+     поэтому теги переносим, а не обрезаем: видно все жанры сразу. */
+  .tags { flex-wrap: wrap; overflow: visible; row-gap: 4px; }
+}
+
+/* Очень узкие экраны (iPhone SE и подобные). */
+@media (max-width: 400px) {
+  .brand { font-size: 15.5px; }
+  .stats-grid { grid-template-columns: minmax(0, 1fr); }
+  .toolbar .chip { font-size: 12px; padding: 6px 9px; }
+}
+
+
+/* ---------- Бестиарий: реестр фишек ---------- */
+.sys-card.bestiary { border-color: var(--accent); }
+.sys-card.bestiary .sys-head h3 { color: var(--accent); }
+.pawn-search { margin: 4px 0 14px; }
+.pawn-sub { font-weight: 400; color: var(--muted); margin-left: 6px; text-transform: none; letter-spacing: 0; }
+
+/* Плотный список, а не плитки: фишек больше тысячи, важна обозримость. */
+.pawn-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 4px 14px; }
+.pawn-row {
+  display: flex; align-items: baseline; gap: 10px; justify-content: space-between;
+  padding: 5px 9px; border-radius: 7px; font-size: 13px;
+}
+.pawn-row:nth-child(odd) { background: var(--surface); }
+.pawn-main { min-width: 0; display: flex; align-items: baseline; gap: 7px; }
+.pawn-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pawn-alt { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.pawn-meta { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.pawn-lvl { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.pawn-count { font-size: 11.5px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+/* Метки наборов: код, номер фишки и множитель, если копий несколько. */
+.pawn-sets { display: flex; gap: 3px; flex-wrap: wrap; }
+.pawn-set {
+  font-size: 10.5px; padding: 1px 5px; border-radius: 4px;
+  background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.pawn-set b { color: var(--accent); margin-left: 3px; }
+/* Название-ссылка: подчёркивание только при наведении, чтобы список
+   не рябил в глазах от 750 подчёркнутых строк. */
+a.pawn-title.link { color: inherit; text-decoration: none; }
+a.pawn-title.link:hover { color: var(--accent); text-decoration: underline; }
+
+@media (max-width: 620px) {
+  .pawn-list { grid-template-columns: minmax(0, 1fr); }
+  .pawn-row { flex-wrap: wrap; gap: 5px; }
+}
+
+
+/* ---------- Ростер: карточки миниатюр ---------- */
+/* Ростер — вторая половина раздела: сверху коробки, ниже собранные из них
+   фигурки. Отбиваем жирной линией и подложкой, чтобы граница читалась сразу. */
+.roster-group {
+  /* Тянем подложку до самого низа карточки: иначе под последним рядом
+     оставалась полоска её собственного фона. Углы обрежет .sys-card. */
+  margin: 26px -16px -16px; padding: 18px 16px 16px;
+  border-top: 3px solid var(--accent);
+  background: var(--surface-2);
+}
+.boxes-group { margin-top: 4px; }
+
+/* Заголовок фракции: официальный значок и имя — видно, где кончается одна
+   армия и начинается следующая. */
+.fac-group { margin-top: 20px; }
+/* Значок центрируем по всему текстовому блоку, а название и счётчик сажаем
+   на общую базовую линию — иначе разный кегль разводит их по высоте. */
+.fac-head {
+  margin: 0 0 10px; display: flex; align-items: center; gap: 9px;
+  padding-bottom: 7px; border-bottom: 1px solid var(--border);
+}
+.fac-logo { width: 26px; height: 26px; object-fit: contain; flex: none; }
+.fac-text {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0;
+}
+.fac-name { font-size: 14px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+.fac-head .pawn-sub { font-size: 12px; margin-left: 0; font-weight: 400; line-height: 1.25; }
+.roster-group .pawn-search { margin: 0 0 14px; }
+.roster-group .sup-group:first-of-type { margin-top: 0; }
+
+/* В плитке только то, по чему фигурку узнают на полке: рендер, имя, база. */
+.mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.mini-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; min-width: 0; cursor: pointer;
+  display: flex; flex-direction: column;
+  transition: border-color .15s, transform .15s;
+}
+.mini-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+/* Герои — штучные фигурки, их видно сразу по золотой подложке. */
+.mini-card.hero {
+  border-color: #c9a13b;
+  background: linear-gradient(160deg, rgba(201,161,59,.22), rgba(201,161,59,.06) 60%,
+              var(--surface) 100%);
+}
+.mini-card.hero .mini-cover { background: rgba(201,161,59,.14); }
+.mini-card.hero .mini-title { color: #e0bc60; }
+.mini-card.hero:hover { border-color: #e8c260; }
+.mini-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Вырезки лежат на прозрачном фоне — показываем целиком, не обрезая. */
+.mini-cover { position: relative; aspect-ratio: 1 / 1; background: var(--surface-2); }
+.mini-cover img {
+  width: 100%; height: 100%; object-fit: contain; display: block; padding: 4px;
+  box-sizing: border-box;
+}
+.mini-qty {
+  position: absolute; right: 7px; bottom: 7px;
+  background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px;
+}
+/* Слот в армии виден прямо в сетке — по нему набирают ростер на партию. */
+.mini-slot {
+  position: absolute; left: 7px; top: 7px;
+  background: rgba(0,0,0,.66); color: var(--accent);
+  font-size: 9px; font-weight: 700; letter-spacing: .07em;
+  padding: 2px 7px; border-radius: 4px;
+}
+.mini-card.hero .mini-slot { color: #e8c260; }
+.mini-body {
+  padding: 9px 11px 11px; display: flex; align-items: baseline;
+  justify-content: space-between; gap: 8px; min-width: 0;
+}
+.mini-title { font-weight: 650; font-size: 13.5px; min-width: 0; }
+.mini-base { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* ---------- Карточка юнита в модалке ---------- */
+/* Раскладка повторяет игровую карту: шапка с артом, статлиния, теги, подвал. */
+.unit-card { display: flex; flex-direction: column; gap: 14px; }
+.unit-top { display: flex; gap: 14px; align-items: flex-start; }
+.unit-art {
+  width: 132px; height: 132px; flex: none; object-fit: contain; padding: 5px;
+  border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
+  box-sizing: border-box;
+}
+.unit-id { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.unit-id h2 { margin: 0; font-size: 21px; line-height: 1.15; }
+.unit-orig { font-size: 13px; color: var(--muted); }
+.unit-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.unit-slot, .unit-role, .unit-sub, .unit-qty {
+  font-size: 10.5px; padding: 3px 8px; border-radius: 4px;
+  letter-spacing: .05em; white-space: nowrap; line-height: 1.5;
+}
+.unit-slot { background: var(--accent); color: #1a1410; font-weight: 700; }
+.unit-sub, .unit-qty { background: var(--surface-2); color: var(--muted); }
+/* Роль — спутник слота, поэтому контурная, а не залитая: рядом со слотом
+   она читается как второй ярлык, а не как заголовок. */
+.unit-role {
+  background: transparent; border: 1px solid var(--accent);
+  color: var(--accent); font-weight: 600; padding: 2px 7px;
+}
+.var-link {
+  background: none; border: 0; padding: 0; margin-left: 4px; font: inherit;
+  color: var(--accent); cursor: pointer; text-decoration: underline;
+}
+
+/* Статлиния — визуальный центр карты, как на печатной. */
+.unit-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.unit-stat {
+  background: var(--surface-2); padding: 9px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.unit-stat b { font-size: 19px; font-weight: 700; line-height: 1; }
+.unit-stat i {
+  font-style: normal; font-size: 9px; color: var(--muted);
+  letter-spacing: .07em; text-align: center;
+}
+.unit-empty { font-size: 12.5px; color: var(--muted); font-style: italic; }
+
+/* Шкала боя: пять косых сегментов между подписями, залит тот, на котором
+   стоит юнит. Повторяет полосу с игровой карты. */
+.unit-scale {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px;
+}
+.cs-lbl { font-size: 9px; letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
+.cs-segs { display: flex; gap: 4px; }
+.cs-segs i {
+  display: block; width: 15px; height: 20px; border: 1.5px solid var(--muted);
+  border-radius: 2px; transform: skewX(-20deg);
+}
+.cs-segs i.on { background: var(--accent); border-color: var(--accent); }
+
+.unit-row { display: flex; flex-direction: column; gap: 6px; }
+.unit-label { font-size: 9.5px; letter-spacing: .09em; color: var(--muted); }
+.unit-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.unit-tag {
+  font-size: 10.5px; padding: 3px 9px; border-radius: 4px; letter-spacing: .05em;
+  background: var(--accent-soft); color: var(--accent); font-weight: 600;
+}
+/* Профиль снабжения — таблица, как на карте: сверху размер отряда,
+   снизу его стоимость. Полосками из пилюль это не читалось. */
+.unit-supply {
+  border-collapse: separate; border-spacing: 1px; background: var(--border);
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  table-layout: auto; width: auto;
+  align-self: start;                 /* .unit-card — flex-колонка, иначе растянется */
+}
+.unit-supply th, .unit-supply td {
+  background: var(--surface-2); padding: 6px 12px; text-align: center;
+  font-weight: 400; white-space: nowrap;
+}
+.unit-supply th {
+  text-align: left; font-size: 9px; letter-spacing: .09em; color: var(--muted);
+}
+/* Главное в таблице — размер отряда: по нему ищут свою строку.
+   Стоимость снабжения читают уже вторым шагом. */
+.unit-supply td { font-size: 15px; font-weight: 700; color: var(--text); }
+.unit-supply tr + tr td { font-size: 12px; font-weight: 400; color: var(--muted); }
+.unit-supply tr + tr + tr td { color: var(--accent); }
+
+/* Улучшение — маленькая карточка: шапка с фазой, названием и ценой,
+   ниже либо текст способности, либо профиль оружия. */
+.up {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 6px;
+}
+.up:last-child { margin-bottom: 0; }
+.up[open] { border-color: var(--accent); }
+
+/* Свёрнутое улучшение — только название и цена; детали по клику. */
+.up-head {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 11px; cursor: pointer; list-style: none;
+}
+.up-head::-webkit-details-marker { display: none; }
+.up-head:hover .up-name { color: var(--accent); }
+.up-chev {
+  font-size: 10px; color: var(--muted); line-height: 1.6;
+  transition: transform .15s; transform-origin: 40% 55%;
+}
+.up[open] .up-chev { transform: rotate(90deg); }
+.up-body { padding: 0 11px 10px 27px; }
+.up-tags { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.up-name { font-size: 13px; font-weight: 650; }
+.up-phase, .up-kw, .up-tag, .up-for {
+  font-size: 9px; letter-spacing: .06em; padding: 2px 6px; border-radius: 3px;
+  white-space: nowrap;
+}
+.up-phase { background: var(--border); color: var(--muted); }
+.up-kw { background: #6b4a2f; color: #f3d9be; font-weight: 700; }
+.up-kw.weapon { background: #3c4a63; color: #cfe0f5; }
+.up-kw.atk { background: var(--border); color: var(--muted); font-weight: 400; }
+/* Цена активации со скобки карты: «1 CP», «2 BM», «1 PE». */
+.up-pay {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .05em; padding: 2px 6px;
+  border-radius: 3px; background: #4a6b3f; color: #dff0d2; white-space: nowrap;
+}
+.up-text b { color: var(--text); font-weight: 650; }
+.up-tag { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.up-for { background: var(--surface); color: var(--muted); }
+.up-cost {
+  margin-left: auto; font-size: 13px; font-weight: 700; color: var(--accent);
+  white-space: nowrap;
+}
+/* В свёрнутом действии справа стоит ключевое слово — вместо цены. */
+.up-head .up-kw { margin-left: auto; }
+.up-text { margin: 7px 0 0; font-size: 12px; line-height: 1.45; color: var(--muted); }
+
+/* Профиль оружия — та же строка полей, что в таблице на карте. */
+.up-wpn { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.up-wpn span {
+  display: flex; flex-direction: column; gap: 1px; align-items: center;
+  background: var(--surface); border-radius: 5px; padding: 3px 8px; min-width: 42px;
+}
+.up-wpn span.wide { align-items: flex-start; flex: 1 1 100%; }
+.up-wpn i { font-style: normal; font-size: 8.5px; letter-spacing: .06em; color: var(--muted); }
+.up-wpn b { font-size: 12px; font-weight: 700; }
+
+.unit-foot {
+  display: flex; flex-wrap: wrap; gap: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border); font-size: 12px; color: var(--muted);
+}
+.unit-note { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+@media (max-width: 620px) {
+  .mini-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .unit-top { flex-direction: column; }
+  .unit-art { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+  .unit-id h2 { font-size: 18px; }
+}

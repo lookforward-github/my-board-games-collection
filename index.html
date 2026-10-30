@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои настольные игры</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css?v=51">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand-row">
+      <button class="dice-btn" id="diceBtn" type="button" title="Бросить d20">
+        <span class="d20" id="d20">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <polygon class="d20-body" points="50,4 92,28 92,72 50,96 8,72 8,28"></polygon>
+            <polygon class="d20-face" points="50,20 76,35 76,65 50,80 24,65 24,35"></polygon>
+            <path class="d20-edge" d="M50,4 L50,20 M92,28 L76,35 M92,72 L76,65
+                                      M50,96 L50,80 M8,72 L24,65 M8,28 L24,35"></path>
+          </svg>
+          <span class="d20-num" id="d20num">20</span>
+        </span>
+      </button>
+      <button class="brand" id="brandHome" type="button"
+              title="К списку игр и сбросить фильтры">
+        <span>Мои настольные игры<small id="brandSub">—</small></span>
+      </button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="games" aria-selected="true">Настольные игры</button>
+      <button class="tab" role="tab" data-view="rpg" aria-selected="false">Ролевые игры</button>
+      <button class="tab" role="tab" data-view="mini" aria-selected="false">Миниатюры</button>
+      <button class="tab" role="tab" data-view="stats" aria-selected="false">Статистика</button>
+    </div>
+    <button class="gaps-btn" id="gapsBtn" hidden
+            title="Позиции, которым не хватает данных">⚠ <span id="gapsCount"></span></button>
+    <button class="icon-btn" id="themeBtn" title="Сменить тему">◐</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <aside class="filters" id="filters">
+      <div class="fgroup">
+        <input type="search" class="search" id="q" placeholder="Поиск по названию…" autocomplete="off">
+      </div>
+
+      <div class="fgroup">
+        <h3>Тип</h3>
+        <div class="chips" id="fKind"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Жанр</h3>
+        <div class="chips" id="fCategory"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Механика</h3>
+        <div class="chips" id="fMechanic"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Количество игроков</h3>
+        <div class="range-row">
+          <input type="range" id="fPlayers" min="0" max="12" value="0" step="1">
+          <span class="range-val" id="fPlayersVal">любое</span>
+        </div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Продолжительность</h3>
+        <div class="chips" id="fTime"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Сложность</h3>
+        <div class="chips" id="fWeight"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Язык</h3>
+        <div class="chips" id="fLang"></div>
+      </div>
+
+      <div class="fgroup">
+        <h3>Цена</h3>
+        <div class="chips" id="fPrice"></div>
+      </div>
+
+
+      <button class="reset" id="resetBtn">Сбросить фильтры</button>
+    </aside>
+
+    <main>
+      <!-- games view -->
+      <section id="viewGames">
+        <div class="toolbar">
+          <span class="count" id="count"></span>
+          <button class="chip filters-toggle" id="filtersToggle">Фильтры</button>
+          <button class="chip lucky" id="luckyBtn"
+                  title="Случайная игра из текущей выборки">Мне повезёт</button>
+          <select class="sort" id="sort">
+            <option value="rank">По рангу BGG</option>
+            <option value="rating">По рейтингу BGG</option>
+            <option value="title">По названию</option>
+            <option value="year">По году (новые)</option>
+            <option value="yearAsc">По году (старые)</option>
+            <option value="weight">По сложности (сложные)</option>
+            <option value="weightAsc">По сложности (простые)</option>
+            <option value="timeAsc">По длительности (короткие)</option>
+            <option value="timeDesc">По длительности (долгие)</option>
+            <option value="priceDesc">По цене (дорогие)</option>
+            <option value="priceAsc">По цене (дешёвые)</option>
+          </select>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="empty" id="empty" hidden>
+          <div class="big">🔍</div>
+          <div>Ничего не найдено. Попробуйте ослабить фильтры.</div>
+        </div>
+      </section>
+
+      <!-- rpg view -->
+      <section id="viewRpg" hidden>
+        <div class="toolbar">
+          <span class="count" id="rpgCount"></span>
+        </div>
+
+        <!-- Бестиарий: реестр картонных фишек, отдельно от материалов -->
+        <div class="sys-card bestiary" data-sys="__bestiary">
+          <button class="sys-head">
+            <div>
+              <h3>🐉 Бестиарий</h3>
+              <div class="sub" id="bestiarySub">—</div>
+            </div>
+            <span class="arrow">▶</span>
+          </button>
+          <div class="sys-body">
+            <input type="search" class="search pawn-search" id="pawnSearch"
+                   placeholder="Поиск существа по названию…" autocomplete="off">
+            <div id="bestiaryBody"></div>
+          </div>
+        </div>
+
+        <div id="rpgList"></div>
+      </section>
+
+      <!-- miniatures view -->
+      <section id="viewMini" hidden>
+        <div id="miniList"></div>
+      </section>
+
+      <!-- неполные данные: список по всей библиотеке, вне фильтров -->
+      <section id="viewGaps" hidden>
+        <div class="toolbar"><span class="count" id="gapsTitle"></span></div>
+        <div id="gapsList"></div>
+      </section>
+
+      <!-- stats view -->
+      <section id="viewStats" hidden></section>
+    </main>
+
+  </div>
+</div>
+
+<div class="backdrop" id="backdrop">
+  <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+</div>
+
+<script src="data/games.js?v=6"></script>
+<script src="data/pawns.js?v=4"></script>
+<script src="data/miniatures.js?v=12"></script>
+<script src="app.js?v=64"></script>
+</body>
+</html>
